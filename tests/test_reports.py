@@ -1,0 +1,41 @@
+# tests/test_reports.py
+"""Tests for reports module."""
+import pandas as pd
+import pytest
+
+from src.reports import spending_by_category
+
+
+@pytest.fixture
+def sample_dataframe():
+    """Fixture providing sample DataFrame."""
+    return pd.DataFrame(
+        {
+            "Дата операции": [
+                "31.12.2021 16:44:00",
+                "30.12.2021 12:00:00",
+            ],  # Изменено на DD.MM.YYYY
+            "Категория": ["Супермаркеты", "Рестораны"],
+            "Сумма операции": [-160.89, -500.00],
+        }
+    )
+
+
+def test_spending_by_category(sample_dataframe):
+    """Test spending_by_category function."""
+    result = spending_by_category(sample_dataframe, "Супермаркеты", "2021-12-31")
+    assert result["category"] == "Супермаркеты"
+    assert result["total_spent"] == -160.89
+    assert result["transaction_count"] == 1
+
+
+def test_spending_by_category_invalid_date(sample_dataframe):
+    """Test spending_by_category with invalid date."""
+    result = spending_by_category(sample_dataframe, "Супермаркеты", "invalid-date")
+    assert "error" in result
+
+
+def test_spending_by_category_error(sample_dataframe):
+    """Test spending_by_category for error handling."""
+    result = spending_by_category(sample_dataframe, "Супермаркеты", "invalid")
+    assert "error" in result

@@ -1,0 +1,17 @@
+# tests/test_views.py
+"""Tests for views module."""
+
+from src.views import home_view
+
+
+def test_home_view():
+    """Test home_view function."""
+    result = home_view("2021-12-31 23:59:59")
+    assert result["page"] == "home"
+    assert "Welcome" in result["message"]
+
+
+def test_home_view_invalid_date():
+    """Test home_view with invalid date."""
+    result = home_view("invalid-date")
+    assert "error" in result

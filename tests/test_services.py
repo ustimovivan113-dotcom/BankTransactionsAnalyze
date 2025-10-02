@@ -1,0 +1,34 @@
+# tests/test_services.py
+"""Tests for services module."""
+import pytest
+
+from src.services import simple_search
+
+
+@pytest.fixture
+def sample_transactions():
+    """Fixture providing sample transaction data."""
+    return [
+        {"Описание": "Колхоз", "Сумма операции": -160.89, "Категория": "Супермаркеты"},
+        {"Описание": "Кафе", "Сумма операции": -500.00, "Категория": "Рестораны"},
+    ]
+
+
+@pytest.mark.parametrize(
+    "query, expected_count",
+    [
+        ("Колхоз", 1),
+        ("кафе", 1),
+        ("несуществующий", 0),
+    ],
+)
+def test_simple_search(sample_transactions, query, expected_count):
+    """Test simple_search function."""
+    result = simple_search(sample_transactions, query)
+    assert result["query"] == query
+    assert len(result["results"]) == expected_count
+
+
+def test_simple_search_empty(sample_transactions):
+    result = simple_search(sample_transactions, "несуществующий")
+    assert len(result["results"]) == 0

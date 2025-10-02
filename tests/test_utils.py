@@ -1,19 +1,40 @@
+# tests/test_utils.py
+"""Tests for utils module."""
+import pandas as pd
 import pytest
-from unittest.mock import patch
-from src.utils import parse_text_to_df, load_transactions
+
+from src.utils import load_transactions
 
 
-def test_parse_text_to_df():
-    sample_text = """row1: A,B,C
-row2: 1,2,3
-row3: 4,5,6"""
-    df = parse_text_to_df(sample_text)
-    assert len(df) == 2
-    assert list(df.columns) == ['A', 'B', 'C']
-
-@patch('os.path.exists', return_value=False)  # Mock: файла нет
+@pytest.fixture
+def sample_text_data():
+    """Fixture providing sample text data."""
+    return """Дата операции,Категория,Сумма операции
+31.12.2021 16:44:00,Супермаркеты,-160.89"""
 
 
-def test_load_transactions_empty(mock_exists):
-    df = load_transactions(text_data="")
-    assert df.empty
+def test_load_transactions_text(sample_text_data):
+    """Test load_transactions with text data."""
+    df = load_transactions(text_data=sample_text_data)
+    assert isinstance(df, pd.DataFrame)
+    assert len(df) == 1
+    assert df.iloc[0]["Сумма операции"] == -160.89
+
+
+def test_load_transactions_no_data():
+    """Test load_transactions with no data provided."""
+    with pytest.raises(ValueError):
+        load_transactions()
+
+
+def test_load_transactions_file(tmp_path):
+    """Test load_transactions with file path."""
+    file = tmp_path / "test.csv"
+    file.write_text(
+        "Дата операции,Категория,Сумма операции\n"
+        "31.12.2021 16:44:00,Супермаркеты,-160.89",
+        encoding="utf-8",
+    )
+    df = load_transactions(file_path=str(file))
+    assert isinstance(df, pd.DataFrame)
+    assert len(df) == 1

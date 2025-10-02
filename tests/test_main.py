@@ -1,0 +1,35 @@
+# tests/test_main.py
+"""Tests for main module."""
+import json
+
+from src.main import main
+
+
+def test_main(capsys):
+    """Test the main function output."""
+    main()
+    captured = capsys.readouterr()
+    output = captured.out
+
+    # Проверяем наличие ключевых частей вывода
+    assert "Главная:" in output
+    assert "Простой поиск:" in output
+    assert "Траты по категории:" in output
+
+    # Проверяем JSON структуры (парсим части вывода)
+    # Главная
+    home_json = output.split("Главная:")[1].split("Простой поиск:")[0].strip()
+    home_data = json.loads(home_json)
+    assert home_data["page"] == "home"
+
+    # Простой поиск
+    search_json = output.split("Простой поиск:")[1].split("Траты по категории:")[0]
+    search_data = json.loads(search_json.strip())
+    assert search_data["query"] == "Колхоз"
+    assert len(search_data["results"]) > 0
+
+    # Траты по категории
+    report_json = output.split("Траты по категории:")[1].strip()
+    report_data = json.loads(report_json)
+    assert report_data["category"] == "Супермаркеты"
+    assert report_data["total_spent"] < 0  # Отрицательная сумма
